@@ -1,0 +1,90 @@
+<template>
+
+    <lightning-input label="Stock Symbol" onchange={handleStockSymbolChange} type="text" placeholder="AAPL" required="true"> </lightning-input>
+
+    <button style="margin-top: 10px" class="slds-button slds-button_neutral" onclick={searchStockSymbol}>Search</button> <br /> <br />
+
+    <template if:true={stockSearchResults}>
+        <table class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols" role="grid" aria-label="Example advanced table as radio group">
+            <thead>
+            <tr class="slds-line-height_reset">
+            <th class="slds-text-align_right" scope="col" style="width:3.25rem">
+            <div class="slds-truncate slds-assistive-text" id="column-group-header" title="Choose a row to select">Choose a row to select</div>
+            </th>
+
+            <th aria-label="Company Name" aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+                <span class="slds-assistive-text">Sort by: </span>
+                <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                <span class="slds-truncate" title="Company Name">Company Name</span>
+                </div>
+                <div class="slds-resizable">
+                </div>
+            </th>
+
+            <th aria-label="Symbol" aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+            <a class="slds-th__action slds-text-link_reset" href="#" role="button" tabindex="-1">
+            <span class="slds-assistive-text">Sort by: </span>
+            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+            <span class="slds-truncate" title="Symbol">Symbol</span>
+            <span class="slds-icon_container slds-icon-utility-arrowdown">
+            <svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true">
+            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+            </span>
+            </div>
+            </a>
+            <div class="slds-resizable">
+            <input type="range" aria-label="Stage column width" class="slds-resizable__input slds-assistive-text" id="cell-resize-handle-550" max="1000" min="20" tabindex="-1" />
+            <span class="slds-resizable__handle">
+            <span class="slds-resizable__divider"></span>
+            </span>
+            </div>
+            </th>
+
+            <th aria-label="Type" aria-sort="none" class="slds-is-resizable slds-is-sortable" scope="col">
+            <a class="slds-th__action slds-text-link_reset" href="#" role="button" tabindex="-1">
+            <span class="slds-assistive-text">Sort by: </span>
+            <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+            <span class="slds-truncate" title="Confidence">Type</span>
+            <span class="slds-icon_container slds-icon-utility-arrowdown">
+            <svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true">
+            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown"></use>
+            </svg>
+            </span>
+            </div>
+            </a>
+            </th>
+            </tr>
+            </thead>
+
+
+            <tbody>
+                <template for:each={stockSearchResults} for:item="object">
+                    <tr class="slds-hint-parent" key={object.stockSymbol}>
+                        <!-- <td class="slds-text-align_right" role="gridcell">
+                        <span class="slds-radio">
+                        <input type="radio" id="radio-01" value="radio-01" name="options" tabindex="-1" aria-labelledby="radio-button-label-01 column-group-header" />
+                        <span class="slds-radio_faux"></span>
+                        <span class="slds-form-element__label slds-assistive-text">Select item 1</span>
+                        </label>
+                        </span>
+                        </td> -->
+                        <td role="gridcell">
+                        <div class="slds-truncate" title="symbol">{object.companyName}</div>
+                        </td>
+                        <td role="gridcell">
+                        <div class="slds-truncate" title="symbol">{object.stockSymbol}</div>
+                        </td>
+                        <td role="gridcell">
+                        <div class="slds-truncate" title="type">{object.stockType}</div>
+                        </td>
+                        <td role="gridcell">
+                        <button class="slds-button slds-button_neutral">Subscribe</button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </template> 
+    
+</template>
