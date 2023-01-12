@@ -6,7 +6,6 @@
 
             <!--SEARCH LWC-->
           <c:stockTracker_Search></c:stockTracker_Search> <br /> <br />
-          <!-- <c:stockTracker_Select></c:stockTracker_Select> -->
         </div>
 
         
@@ -14,7 +13,7 @@
           <span class="slds-align_absolute-center">Dashboard</span>
 
 
-          <!--DASHBOARD LWC-->
+          <!--DASHBOARD LWC (LMS)-->
         </div>
 
       

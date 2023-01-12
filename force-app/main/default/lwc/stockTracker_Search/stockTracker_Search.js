@@ -7,30 +7,25 @@ export default class StockTracker_Search extends LightningElement {
 
     @track stockSearchResults; 
     @track stockSymbol; 
+    @track isResultsFound = false; 
+    @track isSymbolTooShort = true; 
 
     searchStockSymbol() {
-        console.log('got here 1');
         console.log('final stockSymbol: ' + this.stockSymbol);
 
         searchStock({ stockSymbol: this.stockSymbol })
             .then(result => {
                 this.stockSearchResults = result;
 
-                console.log('this.stockSearchResults: ' + this.stockSearchResults);
-                console.log('this.stockSearchResults S: ' + JSON.stringify(this.stockSearchResults));
-                console.log('this.stockSearchResults.length: ' + this.stockSearchResults.length);
-                
-
-                if(result === null) {
+                if(this.stockSearchResults.length == 0) {
+                    this.isResultsFound = false; 
                     console.log('no match found');
-                    this.showToast('Symbol Not Found', 'No match was found for the symbol: ' + this.stockSymbol, 'error');
+                    this.showToast('Symbol Not Found', 'No match for: ' + this.stockSymbol, 'error');
                 } else {
                     console.log('sucess!');
+                    this.isResultsFound = true; 
                     for(let i = 0; i < this.stockSearchResults.length; i++) {
                         let currentStock = this.stockSearchResults[i];
-                        console.log('currentStock.companyName: ' + currentStock.companyName);
-                        console.log('currentStock.stockSymbol: ' + currentStock.stockSymbol);
-                        console.log('currentStock.stockType: ' + currentStock.stockType);
                     }
                 }
             })
@@ -41,8 +36,20 @@ export default class StockTracker_Search extends LightningElement {
     }
 
     handleStockSymbolChange(event) {
+        console.log('event.target.value: ' + event.target.value);
         this.stockSymbol = event.target.value; 
-        console.log('stockSymbol: ' + this.stockSymbol);
+        console.log('this.stockSymbol: ' + this.stockSymbol);
+        console.log('this.stockSymbol.length: ' + this.stockSymbol.length);
+        if(this.stockSymbol.length >= 2) {
+            this.isSymbolTooShort = false; 
+        } else {
+            this.isSymbolTooShort = true; 
+        }
+
+        if(event.which == 13 && !this.isSymbolTooShort) { // enter key pressed
+            console.log('enter key pressed');
+            this.searchStockSymbol(this.stockSymbol);
+        }
     }
 
     showToast(title, message, variant) {
