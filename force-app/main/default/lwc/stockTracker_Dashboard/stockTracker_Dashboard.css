@@ -1,0 +1,8 @@
+.sellOrBuy {
+    --slds-c-icon-color-foreground-default: green !important;
+    --slds-c-icon-color-foreground: green !important;
+}
+.slds-icon-utility-check {
+    --slds-c-icon-color-foreground-default: green !important;
+    --slds-c-icon-color-foreground: green !important;
+}

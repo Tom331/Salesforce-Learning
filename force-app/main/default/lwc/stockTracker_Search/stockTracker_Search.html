@@ -1,7 +1,7 @@
 <template>
 
-    <lightning-input label="Stock Symbol" onkeyup={handleStockSymbolChange} type="text" placeholder="AAPL" required="true" min-length="2"> </lightning-input>
-    <button disabled={isSymbolTooShort} style="margin-top: 10px" class="slds-button slds-button_neutral" onclick={searchStockSymbol}>Search</button> <br /> <br />
+    <lightning-input label="Stock Symbol" onkeyup={handleStockSymbolChange} type="text" placeholder="UBER, AAPL, GOOG, MSFT, AMZN" required="true"> </lightning-input>
+    <button style="margin-top: 10px" class="slds-button slds-button_neutral" onclick={searchStockSymbol}>Search</button> <br /> <br />
 
     <template if:true={isResultsFound}>
         <table style="max-height: 300px; display: block" class="slds-table slds-table_bordered slds-table_fixed-layout slds-scrollable_y" role="grid" aria-label="alabel">
@@ -46,7 +46,8 @@
                         <div class="slds-truncate" title="type">{object.stockType}</div>
                         </td>
                         <td style="padding-left: 5px; width: 15%; max-width: 15%" role="gridcell">
-                        <button class="slds-button slds-button_neutral">Add to dashboard</button>
+                        <button data-name={object.companyName} data-symbol={object.stockSymbol} data-type={object.stockType} 
+                            onclick={handleAddToDashboard} class="slds-button slds-button_neutral">Add to dashboard</button>
                         </td>
                     </tr>
                 </template>

@@ -1,7 +1,5 @@
 public with sharing class StockTrackerService {
 
-    public static final String FINNHUB_SEARCH_ENDPOINT = 'https://finnhub.io/api/v1/search'; 
-
     public class StockSearchResult {
         @auraEnabled
         public String companyName;
@@ -16,61 +14,74 @@ public with sharing class StockTrackerService {
             this.stockType = stockType;
         }
     }
-
-    public class StockQuoteResult {
-        String stockName;
-        String stockSymbol; 
-        Decimal stockPrice; 
-
-        public StockQuoteResult(String stockName, String stockSymbol, Decimal stockPrice) {
-            this.stockName = stockName;
-            this.stockSymbol = stockSymbol;
-            this.stockPrice = stockPrice;
-        }
-    }
     
     @AuraEnabled(cacheable=true)
-    public static List<StockSearchResult> searchStock(String stockSymbol){
+    public static List<StockSearchResult> searchStock(String stockSymbol) {
         try {
-            System.debug('stockSymbol: ' + stockSymbol);
-            StockTrackerSettings__mdt stockTrackerSetting = StockTrackerSettings__mdt.getInstance('StockTrackerCreds');
-            String token = stockTrackerSetting.token__c; 
-            String stockSymbolEndpoint = FINNHUB_SEARCH_ENDPOINT;
-            stockSymbolEndpoint += '?q=' + stockSymbol; 
-            stockSymbolEndpoint += '&token=' + token; 
-            System.debug('stockSymbolEndpoint: ' + stockSymbolEndpoint);
+            List<StockSearchResult> SSRs = StockTrackerCallouts.getStockInfoCallout(stockSymbol); //callout to Finhubb 'Symbol' endpoint
+            return SSRs; 
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 
-            HttpRequest req = new HttpRequest();
-            req.setEndpoint(stockSymbolEndpoint);
+    @AuraEnabled
+    public static String subscribeStock(String companyName, String stockSymbol, String stockType) {
+        try {    
+            String result = 'unknown'; 
+
+            //SOQL Injection prevented by using a bind variable. documentation: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/pages_security_tips_soql_injection.htm
+            List<Stock__c> stocks = [SELECT Name, Symbol__c, Price__c FROM Stock__c WHERE Symbol__c = :stockSymbol LIMIT 1];
             
-            req.setMethod('GET');
-            Http http = new Http();
-            HTTPResponse res = http.send(req);
-            System.debug(res.getBody());
-
-            Map<String, Object> result = (Map<String, Object>)JSON.deserializeUntyped(res.getBody()); 
-            System.debug('result: ' + result);
-            List<Object> stockObjects = (List<Object>)result.get('result');
-            System.debug('stockObjects: ' + stockObjects);
-
-            List<StockSearchResult> SSRs = new List<StockSearchResult>(); 
-            for(Object stockObj : stockObjects) {
-                System.debug('stockObj: ' + stockObj);
-                Map<String, Object> stock = (Map<String, Object>)stockObj;
-                System.debug('stock.get("symbol"): ' + stock.get('symbol'));
-                String currentSymbol = (String)stock.get('symbol');
-                // if(currentSymbol.equalsIgnoreCase(stockSymbol)) {
-                StockSearchResult ssr = new StockSearchResult((String)stock.get('description'), (String)stock.get('symbol'), (String)stock.get('type')); 
-                System.debug('ssr: ' + ssr);
-                SSRs.add(ssr); 
-                //}
+            Stock__c stockToSubscribe; 
+            if(stocks.isEmpty()) {
+                Decimal price = StockTrackerCallouts.getStockPriceCallout(stockSymbol); //callout to Finhubb 'Quote' endpoint
+                Stock__c newStock = new Stock__c ( 
+                    Name = companyName,
+                    Price__c = price,
+                    Symbol__c = stockSymbol,
+                    Type__c = stockType
+                );
+                insert newStock; 
+                stockToSubscribe = newStock;
+            } else {
+                stockToSubscribe = stocks[0];
             }
 
-            return SSRs; 
+            Watch_List__c currentUserWatchlist = [SELECT Id, Name FROM Watch_List__c WHERE User__c = :UserInfo.getUserId() LIMIT 1]; //todo: allow multiple watch lists
 
+            List<Stock_Subscription__c> duplicateSubscriptions = [SELECT Stock__r.Symbol__c FROM Stock_Subscription__c 
+                WHERE Watch_List__r.User__c = :UserInfo.getUserId() AND Stock__r.Symbol__c = :stockToSubscribe.Symbol__c];
+            if(!duplicateSubscriptions.isEmpty()) {
+                throw new AlreadySubscribedException('You have already subscribed to this stock');
+            }
+
+            Stock_Subscription__c stockSub = new Stock_Subscription__c(
+                Name = UserInfo.getName() + '->' + stockToSubscribe.Name.abbreviate(35),
+                Stock__c = stockToSubscribe.Id,
+                Watch_List__c = currentUserWatchlist.Id
+            );
+            insert stockSub;
+            
+            result = 'success';
+            return result; 
             
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+    @AuraEnabled
+    public static List<Stock_Subscription__c> loadDashboard(){
+        try {
+            List<Stock_Subscription__c> subscribedStocks = [SELECT Id, Stock__r.Name, Stock__r.Price__c, Stock__r.Symbol__c, Buy_Price__c, Sell_Price__c 
+                FROM Stock_Subscription__c WHERE Watch_List__r.User__c = :UserInfo.getUserId()];
+            return subscribedStocks; 
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    public class AlreadySubscribedException extends Exception {}
+
 }

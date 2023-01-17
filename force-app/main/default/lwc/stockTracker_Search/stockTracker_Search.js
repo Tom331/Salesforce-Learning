@@ -11,22 +11,19 @@ export default class StockTracker_Search extends LightningElement {
     @track isSymbolTooShort = true; 
 
     searchStockSymbol() {
-        console.log('final stockSymbol: ' + this.stockSymbol);
+        console.log('Search: searchStockSymbol()');
 
         searchStock({ stockSymbol: this.stockSymbol })
             .then(result => {
                 this.stockSearchResults = result;
-
                 if(this.stockSearchResults.length == 0) {
                     this.isResultsFound = false; 
                     console.log('no match found');
                     this.showToast('Symbol Not Found', 'No match for: ' + this.stockSymbol, 'error');
                 } else {
-                    console.log('sucess!');
+                    console.log('success1!');
+                    this.stockSearchResults = result;
                     this.isResultsFound = true; 
-                    for(let i = 0; i < this.stockSearchResults.length; i++) {
-                        let currentStock = this.stockSearchResults[i];
-                    }
                 }
             })
             .catch(error => {
@@ -36,20 +33,32 @@ export default class StockTracker_Search extends LightningElement {
     }
 
     handleStockSymbolChange(event) {
-        console.log('event.target.value: ' + event.target.value);
         this.stockSymbol = event.target.value; 
-        console.log('this.stockSymbol: ' + this.stockSymbol);
-        console.log('this.stockSymbol.length: ' + this.stockSymbol.length);
         if(this.stockSymbol.length >= 2) {
             this.isSymbolTooShort = false; 
         } else {
             this.isSymbolTooShort = true; 
         }
 
-        if(event.which == 13 && !this.isSymbolTooShort) { // enter key pressed
-            console.log('enter key pressed');
+        if(event.which == 13) { // enter key pressed
             this.searchStockSymbol(this.stockSymbol);
         }
+    }
+
+    handleAddToDashboard(event) {
+        let name = event.target.dataset.name;
+        let symbol = event.target.dataset.symbol;
+        let type = event.target.dataset.type;
+
+        const addToDashboardEvent = new CustomEvent("addtodashboard", {
+            detail: { 
+                name: name,
+                symbol: symbol,
+                type: type
+             }
+          });
+          // Fire the custom event
+          this.dispatchEvent(addToDashboardEvent);
     }
 
     showToast(title, message, variant) {

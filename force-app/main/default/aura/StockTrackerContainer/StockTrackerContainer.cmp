@@ -1,22 +1,23 @@
 <aura:component implements="force:appHostable">
+  
+    <aura:attribute name="selectedSymbolValue" type="String"/>
+
     <div class="slds-grid slds-gutters">
         <div style="background-color: white; height: 500px; margin-left: 10px; margin-right: 10px;" class="slds-col slds-size_1-of-2">
-          <span class="slds-align_absolute-center">Search</span>
-
+          <span style="font-size: 25px" class="slds-align_absolute-center">Search US Stocks</span>
 
             <!--SEARCH LWC-->
-          <c:stockTracker_Search></c:stockTracker_Search> <br /> <br />
+            <!-- There are two ways to listen for an event: declaratively from the component’s HTML template, or programmatically using an imperative JavaScript API -->
+            <!-- "onaddtodashboard" here is a declarative event listener. "on" followed by event name.-->
+          <c:stockTracker_Search onaddtodashboard="{!c.getValueFromLwc}"></c:stockTracker_Search> <br /> <br />
         </div>
 
-        
         <div style="background-color: white; height: 500px; margin-left: 10px; margin-right: 10px; flex: auto"  class="slds-col slds-size_1-of-2">
-          <span class="slds-align_absolute-center">Dashboard</span>
+          <span style="font-size: 25px" class="slds-align_absolute-center">Dashboard</span>
 
 
           <!--DASHBOARD LWC (LMS)-->
+          <c:stockTracker_Dashboard aura:id="dashboardCmp"></c:stockTracker_Dashboard>
         </div>
-
-      
-
       </div>
 </aura:component>	
